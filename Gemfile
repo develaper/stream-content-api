@@ -16,7 +16,7 @@ gem "kaminari", "~> 1.2"
 gem "jsonapi-serializer", "~> 2.2"
 
 # CORS handling for API
-gem "rack-cors", "~> 2.0"
+gem "rack-cors", "~> 3.0"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
