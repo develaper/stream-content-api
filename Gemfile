@@ -71,5 +71,5 @@ group :test do
   gem "simplecov", "~> 0.22", require: false
   
   # Additional RSpec matchers
-  gem "shoulda-matchers", "~> 5.0"
+  gem "shoulda-matchers", "~> 6.5"
 end
