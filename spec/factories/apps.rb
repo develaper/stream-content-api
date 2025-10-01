@@ -1,5 +1,5 @@
 FactoryBot.define do
   factory :app do
-    sequence(:name) { |n| "Streaming App #{n}" }
+    name { "#{Faker::Company.name} #{[ 'Stream', 'TV', 'Plus', 'Now', 'Play' ].sample}" }
   end
 end
