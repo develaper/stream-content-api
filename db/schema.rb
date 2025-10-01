@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_01_103002) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_01_134620) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -117,10 +117,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_01_103002) do
     t.index ["year"], name: "index_tv_shows_on_year"
   end
 
+  create_table "user_favorite_apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "user_identifier", null: false
+    t.uuid "app_id", null: false
+    t.integer "position", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_id"], name: "index_user_favorite_apps_on_app_id"
+    t.index ["user_identifier", "app_id"], name: "index_user_favorite_apps_on_user_identifier_and_app_id", unique: true
+    t.index ["user_identifier", "position"], name: "index_user_favorite_apps_on_user_identifier_and_position"
+  end
+
   add_foreign_key "channel_programs", "channels"
   add_foreign_key "content_availabilities", "apps"
   add_foreign_key "content_availabilities", "markets"
   add_foreign_key "episodes", "seasons"
   add_foreign_key "program_schedules", "channel_programs"
   add_foreign_key "seasons", "tv_shows"
+  add_foreign_key "user_favorite_apps", "apps"
 end
