@@ -143,14 +143,65 @@ RSpec.describe Api::V1::ContentController, type: :controller do
 
       json = JSON.parse(response.body)
       expect(json.size).to eq(3)
-      expect(json.map { |item| item['title'] }).to eq(['Program 3', 'Program 1', 'Program 2'])
-      expect(json.map { |item| item['time_watched'] }).to eq([450, 300, 150])
+      expect(json.map { |item| item['title'] }).to eq([ 'Program 3', 'Program 1', 'Program 2' ])
+      expect(json.map { |item| item['time_watched'] }).to eq([ 450, 300, 150 ])
     end
 
     it 'returns an empty array if the user has no watched programs' do
       get :favorite_channel_programs, params: { user_id: 'unknown_user' }
       expect(response).to have_http_status(:ok)
 
+      json = JSON.parse(response.body)
+      expect(json).to be_empty
+    end
+  end
+
+  describe 'GET #search' do
+    let!(:movie2) { create(:movie, title: 'Another Movie', year: 2021) }
+    let!(:tv_show2) { create(:tv_show, title: 'Another TV Show', year: 2020) }
+    let!(:channel2) { create(:channel, title: 'Another Channel') }
+    let!(:app_hulu) { create(:app, name: 'Hulu') }
+
+    before do
+      create(:content_availability, content: movie2, app: app_hulu, market: market_us)
+      create(:content_availability, content: tv_show2, app: app_hulu, market: market_es)
+      create(:content_availability, content: channel2, app: app_hulu, market: market_us)
+    end
+
+    it 'returns an error if query parameter is missing' do
+      get :search
+      expect(response).to have_http_status(:bad_request)
+      expect(JSON.parse(response.body)['error']).to eq('query parameter is required')
+    end
+
+    it 'returns all matching content and apps for a query' do
+      get :search, params: { query: 'Test' }
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      titles = json.map { |item| item['title'] || item['name'] }
+      expect(titles).to include('Test Movie', 'Test TV Show', 'Test Channel')
+    end
+
+    it 'returns content based on the year in the query' do
+      get :search, params: { query: '2022' }
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      titles = json.map { |item| item['title'] || item['name'] }
+      expect(titles).to include('Test TV Show')
+    end
+
+    it 'returns only apps for an app name query' do
+      get :search, params: { query: 'Hulu' }
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      names = json.map { |item| item['name'] }.compact
+      expect(names).to include('Hulu')
+      expect(json.all? { |item| item['type'] == 'app' }).to be true
+    end
+
+    it 'returns empty array if no content matches the query' do
+      get :search, params: { query: 'Nonexistent' }
+      expect(response).to have_http_status(:ok)
       json = JSON.parse(response.body)
       expect(json).to be_empty
     end
