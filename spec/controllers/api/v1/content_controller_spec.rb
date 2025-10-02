@@ -118,4 +118,41 @@ RSpec.describe Api::V1::ContentController, type: :controller do
       expect(json).not_to have_key('time_watched')
     end
   end
+
+  describe 'GET #favorite_channel_programs' do
+    let(:user_identifier) { "user_456" }
+    let!(:program1) { create(:channel_program, title: 'Program 1', channel: channel) }
+    let!(:program2) { create(:channel_program, title: 'Program 2', channel: channel) }
+    let!(:program3) { create(:channel_program, title: 'Program 3', channel: channel) }
+
+    before do
+      create(:user_watched_program, user_identifier: user_identifier, channel_program: program1, watched_duration: 300)
+      create(:user_watched_program, user_identifier: user_identifier, channel_program: program2, watched_duration: 150)
+      create(:user_watched_program, user_identifier: user_identifier, channel_program: program3, watched_duration: 450)
+    end
+
+    it 'returns an error if user_id parameter is missing' do
+      get :favorite_channel_programs
+      expect(response).to have_http_status(:bad_request)
+      expect(JSON.parse(response.body)['error']).to eq('user_id parameter is required')
+    end
+
+    it 'returns favorite channel programs ordered by watched duration' do
+      get :favorite_channel_programs, params: { user_id: user_identifier }
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json.size).to eq(3)
+      expect(json.map { |item| item['title'] }).to eq(['Program 3', 'Program 1', 'Program 2'])
+      expect(json.map { |item| item['time_watched'] }).to eq([450, 300, 150])
+    end
+
+    it 'returns an empty array if the user has no watched programs' do
+      get :favorite_channel_programs, params: { user_id: 'unknown_user' }
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json).to be_empty
+    end
+  end
 end

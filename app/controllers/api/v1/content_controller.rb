@@ -1,4 +1,3 @@
-
 module Api
   module V1
     class ContentController < BaseController
@@ -30,6 +29,20 @@ module Api
         content = entry.content
 
         render json: ContentItem.new(content, user_id: params[:user_id])
+      end
+
+      def favorite_channel_programs
+        user_id = params[:user_id]
+        return render(json: { error: "user_id parameter is required" }, status: :bad_request) unless user_id.present?
+
+        favorites = UserWatchedProgram
+          .where(user_identifier: user_id)
+          .where.not(channel_program_id: nil)
+          .order(watched_duration: :desc)
+          .includes(:channel_program)
+          .map { |uwp| ContentItem.new(uwp.channel_program, user_id: user_id) }
+
+          render json: favorites
       end
 
       private

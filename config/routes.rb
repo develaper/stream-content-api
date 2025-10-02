@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       resources :content, only: [ :index, :show ] do
         collection do
           get "search"
+          get "favorite_channel_programs"
         end
       end
     end
