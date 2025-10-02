@@ -1,7 +1,8 @@
 class ContentItem
   attr_reader :id, :title, :type, :year, :duration_in_seconds, :availabilities
 
-  def initialize(content)
+  def initialize(content, user_id: nil)
+    @user_id = user_id
     @id = content.id
     @title = content.title
     @type = content.content_type
@@ -16,7 +17,7 @@ class ContentItem
   end
 
   def as_json(options = {})
-    {
+    base ={
       id: @id,
       title: @title,
       type: @type,
@@ -24,5 +25,11 @@ class ContentItem
       duration_in_seconds: @duration_in_seconds,
       availabilities: @availabilities
     }.compact
+
+    if @type == "channel_program" && @user_id.present?
+      user_watched = UserWatchedProgram.find_by(user_identifier: @user_id, channel_program_id: @id)
+      base[:time_watched] = user_watched ? user_watched.time_watched : 0
+    end
+    base
   end
 end

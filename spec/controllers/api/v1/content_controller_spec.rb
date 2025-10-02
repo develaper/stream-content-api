@@ -75,4 +75,47 @@ RSpec.describe Api::V1::ContentController, type: :controller do
       end
     end
   end
+
+  describe 'GET #show' do
+    it 'returns content details for a valid content ID' do
+      get :show, params: { id: movie.id }
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json['title']).to eq('Test Movie')
+      expect(json['type']).to eq('movie')
+    end
+
+    it 'returns not found for an invalid content ID' do
+      get :show, params: { id: 9999 }
+      expect(response).to have_http_status(:not_found)
+      expect(JSON.parse(response.body)['error']).to eq('Content not found')
+    end
+
+    it 'includes time_watched for ChannelProgram when user_id is provided' do
+      channel_program = create(:channel_program, title: 'Test Program', channel: channel)
+      user_identifier = "user_123"
+      create(:user_watched_program, user_identifier: user_identifier, channel_program: channel_program, watched_duration: 120)
+
+      get :show, params: { id: channel_program.id, user_id: user_identifier }
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json['title']).to eq('Test Program')
+      expect(json['type']).to eq('channel_program')
+      expect(json['time_watched']).to eq(120)
+    end
+
+    it 'returns content details without time_watched if user_id is not provided for ChannelProgram' do
+      channel_program = create(:channel_program, title: 'Test Program', channel: channel)
+
+      get :show, params: { id: channel_program.id }
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json['title']).to eq('Test Program')
+      expect(json['type']).to eq('channel_program')
+      expect(json).not_to have_key('time_watched')
+    end
+  end
 end

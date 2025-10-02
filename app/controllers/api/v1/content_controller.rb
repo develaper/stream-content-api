@@ -20,6 +20,18 @@ module Api
         render json: @content
       end
 
+      # GET /api/v1/content/:id
+      # Optional params: user_id (for channel programs to get time_watched)
+      #
+      def show
+        entry = CatalogEntry.find_by(content_id: params[:id])
+        return render(json: { error: "Content not found" }, status: :not_found) unless entry
+
+        content = entry.content
+
+        render json: ContentItem.new(content, user_id: params[:user_id])
+      end
+
       private
 
       def content_models
