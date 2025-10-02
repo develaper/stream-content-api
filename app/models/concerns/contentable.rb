@@ -2,6 +2,8 @@ module Contentable
   extend ActiveSupport::Concern
 
   included do
+    Contentable.register(self)
+
     validates :title, presence: true
 
     has_many :content_availabilities, as: :content, dependent: :destroy
@@ -16,10 +18,14 @@ module Contentable
     self.class.name.underscore
   end
 
-  private
 
-  def create_catalog_entry
-    CatalogEntry.create!(content: self, id: self.id)
+  def self.register(klass)
+    @registered ||= []
+    @registered << klass unless @registered.include?(klass)
+  end
+
+  def self.registered
+    @registered ||= []
   end
 
   # Check if content is available in a specific market
@@ -36,5 +42,11 @@ module Contentable
   #
   def available_on?(app_name)
     content_availabilities.joins(:app).exists?(apps: { name: app_name })
+  end
+
+  private
+
+  def create_catalog_entry
+    CatalogEntry.create!(content: self, id: self.id)
   end
 end
