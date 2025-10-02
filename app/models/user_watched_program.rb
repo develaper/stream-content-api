@@ -16,4 +16,8 @@ class UserWatchedProgram < ApplicationRecord
     self.watched_duration += seconds
     save
   end
+
+  def time_watched
+    watched_duration
+  end
 end
