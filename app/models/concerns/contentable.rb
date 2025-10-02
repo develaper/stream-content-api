@@ -7,10 +7,19 @@ module Contentable
     has_many :content_availabilities, as: :content, dependent: :destroy
     has_many :apps, through: :content_availabilities
     has_many :markets, through: :content_availabilities
+    has_one :catalog_entry, as: :content, dependent: :destroy
+
+    after_create :create_catalog_entry
   end
 
   def content_type
     self.class.name.underscore
+  end
+
+  private
+
+  def create_catalog_entry
+    CatalogEntry.create!(content: self, id: self.id)
   end
 
   # Check if content is available in a specific market
