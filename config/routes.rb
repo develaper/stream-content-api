@@ -15,6 +15,8 @@ Rails.application.routes.draw do
           get "favorite_channel_programs"
         end
       end
+      get "apps/favorites", to: "apps#favorites"
+      post "apps/favorite", to: "apps#favorite"
     end
   end
 
