@@ -65,7 +65,7 @@ group :test do
   gem "json_matchers", "~> 0.11"
 
   # HTTP request stubbing
-  gem "webmock", "~> 3.0"
+  gem "webmock", "~> 3.26"
 
   # Test coverage
   gem "simplecov", "~> 0.22", require: false
